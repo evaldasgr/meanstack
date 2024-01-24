@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="meanstack" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/meanstack" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="bin/Debug/" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/meanstack" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="bin/Release/" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O3" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-pedantic" />
+			<Add option="-Wextra" />
+			<Add option="-Wall" />
+			<Add option="-fopenmp" />
+			<Add option="-std=c++17" />
+			<Add option="-D_REENTRANT" />
+			<Add directory="include" />
+		</Compiler>
+		<Linker>
+			<Add option="-fopenmp" />
+			<Add library="tiff" />
+			<Add library="png" />
+			<Add library="jpeg" />
+			<Add library="pthread" />
+		</Linker>
+		<Unit filename="include/AlignTool.hpp" />
+		<Unit filename="include/ArgParser.hpp" />
+		<Unit filename="include/Image.hpp" />
+		<Unit filename="include/ImageJpegIo.hpp" />
+		<Unit filename="include/ImagePngIo.hpp" />
+		<Unit filename="include/ImageSequence.hpp" />
+		<Unit filename="include/ImageTiffIo.hpp" />
+		<Unit filename="include/OffsetsFile.hpp" />
+		<Unit filename="include/StackTool.hpp" />
+		<Unit filename="include/Vector.hpp" />
+		<Unit filename="src/AlignTool.cpp" />
+		<Unit filename="src/ArgParser.cpp" />
+		<Unit filename="src/Image.cpp" />
+		<Unit filename="src/ImageJpegIo.cpp" />
+		<Unit filename="src/ImagePngIo.cpp" />
+		<Unit filename="src/ImageSequence.cpp" />
+		<Unit filename="src/ImageTiffIo.cpp" />
+		<Unit filename="src/Main.cpp" />
+		<Unit filename="src/OffsetsFile.cpp" />
+		<Unit filename="src/StackTool.cpp" />
+		<Unit filename="src/Vector.cpp" />
+		<Extensions />
+	</Project>
+</CodeBlocks_project_file>

@@ -56,6 +56,7 @@
 		<Unit filename="include/OffsetsFile.hpp" />
 		<Unit filename="include/StackTool.hpp" />
 		<Unit filename="include/Vector.hpp" />
+		<Unit filename="include/DebayerTool.hpp" />
 		<Unit filename="src/AlignTool.cpp" />
 		<Unit filename="src/ArgParser.cpp" />
 		<Unit filename="src/Image.cpp" />
@@ -67,6 +68,7 @@
 		<Unit filename="src/OffsetsFile.cpp" />
 		<Unit filename="src/StackTool.cpp" />
 		<Unit filename="src/Vector.cpp" />
+		<Unit filename="src/DebayerTool.cpp" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>

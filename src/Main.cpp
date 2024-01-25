@@ -38,6 +38,16 @@ int main(int argc, char* argv[])
         }
         ret = tool.run(argc, argv) ? 1 : 0;
     }
+    else if (std::strcmp(argv[1], "debayer") == 0)
+    {
+        DebayerTool tool;
+        if (argc == 2)
+        {
+            tool.printUsage();
+            return 1;
+        }
+        ret = tool.run(argc, argv) ? 1 : 0;
+    }
     else
     {
         printUsage();
@@ -52,5 +62,5 @@ int main(int argc, char* argv[])
 
 void printUsage()
 {
-    std::cerr << "Usage: meanstack align/stack" << std::endl;
+    std::cerr << "Usage: meanstack align/stack/debayer" << std::endl;
 }

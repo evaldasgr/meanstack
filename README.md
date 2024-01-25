@@ -1,5 +1,5 @@
 # meanstack
-meanstack is a utility for aligning and stacking astrophotography images to reduce noise. This utility is optimized for use with untracked telescopes and allows for alignment of images where star detection techniques can be unreliable. Supported features are rough alignment using keyframe offsets, fine alignment by tracking around a specified object and mean (average) stacking with support for dark frames.
+meanstack is a utility for aligning and stacking astrophotography images to reduce noise. This utility is optimized for use with untracked telescopes and allows for alignment of images where star detection techniques can be unreliable. Supported features are image debayering, rough alignment using keyframe offsets, fine alignment by tracking around a specified object and mean (average) stacking with support for dark frames.
 
 # Dependencies
 - libjpeg-turbo

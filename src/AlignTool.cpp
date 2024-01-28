@@ -43,9 +43,17 @@ bool AlignTool::run(int argc, char* argv[])
     }
 
     Vector startOffset = offsets.get(0);
+    int progress = 0;
     #pragma omp parallel for
     for (int i = 0; i < imgSeq.getCount(); i++)
     {
+        #pragma omp critical
+        {
+            progress++;
+            if (progress % 100 == 0)
+                std::cout << "Processing image " << progress << "/" << imgSeq.getCount() << "..." << std::endl;
+        }
+
         Image img;
         if (!img.load(imgSeq.getFilename(i)))
             continue;
@@ -114,6 +122,8 @@ bool AlignTool::run(int argc, char* argv[])
 
     if (!offsets.save(m_outFn))
         return false;
+
+    std::cout << "Done" << std::endl;
 
     return true;
 }

@@ -157,7 +157,7 @@ bool DebayerTool::run(int argc, char* argv[])
             }
         }
 
-        outImg.save(m_outPath + "/" + std::to_string(i) + ".tiff");
+        outImg.save(m_outPath + "/" + std::to_string(i) + "." + m_outFormat);
     }
 
     std::cout << "Done" << std::endl;
@@ -167,15 +167,17 @@ bool DebayerTool::run(int argc, char* argv[])
 
 void DebayerTool::printUsage()
 {
-    std::cerr << "Usage: meanstack debayer -i dir -o dir" << std::endl
-        << "-i dir Input image sequence directory" << std::endl
-        << "-o dir Output image sequence directory" << std::endl;
+    std::cerr << "Usage: meanstack debayer -i dir [-f format] -o dir" << std::endl
+        << "-i dir    Input image sequence directory" << std::endl
+        << "-f format Output image format (TIFF/PNG), optional (default - TIFF)" << std::endl
+        << "-o dir    Output image sequence directory" << std::endl;
 }
 
 bool DebayerTool::parseArgs(int argc, char* argv[])
 {
     ArgParser parser;
     parser.registerString("-i", true);
+    parser.registerString("-f");
     parser.registerString("-o", true);
 
     if (!parser.parse(argc, argv, 2))
@@ -183,6 +185,19 @@ bool DebayerTool::parseArgs(int argc, char* argv[])
 
     m_inPath = parser.getString("-i");
     m_outPath = parser.getString("-o");
+
+    if (parser.hasString("-f"))
+    {
+        m_outFormat = parser.getString("-f");
+        std::transform(m_outFormat.begin(), m_outFormat.end(), m_outFormat.begin(), [](unsigned char c) { return std::tolower(c); });
+        if (m_outFormat.compare("tiff") != 0 && m_outFormat.compare("tif") != 0 && m_outFormat.compare("png") != 0)
+        {
+            std::cerr << "Error: Unrecognized image format" << std::endl;
+            return false;
+        }
+    }
+    else
+        m_outFormat = "tiff";
 
     return true;
 }

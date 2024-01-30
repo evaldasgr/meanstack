@@ -35,7 +35,7 @@
 			<Add option="-Wextra" />
 			<Add option="-Wall" />
 			<Add option="-fopenmp" />
-			<Add option="-std=c++17" />
+			<Add option="-std=c++2a" />
 			<Add option="-D_REENTRANT" />
 			<Add directory="include" />
 		</Compiler>

@@ -1,5 +1,7 @@
 #include <ImagePngIo.hpp>
 #include <iostream>
+#include <algorithm>
+#include <bit>
 #include <png.h>
 #include <Image.hpp>
 
@@ -61,6 +63,55 @@ bool ImagePngIo::load(const std::string& filename, Image& image)
 
 bool ImagePngIo::save(const std::string& filename, const Image& image)
 {
-    std::cerr << "Error: PNG saving is not implemented yet" << std::endl;
-    return false;
+    std::FILE* file = std::fopen(filename.c_str(), "wb");
+    if (!file)
+        return false;
+
+    png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    png_infop info = png_create_info_struct(png);
+
+    png_init_io(png, file);
+
+    // PNG does not support 32-bit bit-depth, so reduce to 16-bit
+    // For now all images will be converted to RGBA
+    png_set_IHDR(png, info, image.getWidth(), image.getHeight(), 16, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+    png_write_info(png, info);
+
+    if constexpr (std::endian::native == std::endian::little)
+        png_set_swap(png);
+
+    std::vector<uint16_t> buf(image.getWidth() * 4);
+    for (int y = 0; y < image.getHeight(); y++)
+    {
+        for (int x = 0; x < image.getWidth(); x++)
+        {
+            uint16_t* pixel = &buf[x * 4];
+
+            pixel[0] = std::clamp((int)(image.getSample(x, y, 0) * 65535.f), 0, 65535);
+            if (image.getChannels() >= 3)
+            {
+                pixel[1] = std::clamp((int)(image.getSample(x, y, 1) * 65535.f), 0, 65535);
+                pixel[2] = std::clamp((int)(image.getSample(x, y, 2) * 65535.f), 0, 65535);
+                if (image.getChannels() == 4)
+                    pixel[3] = std::clamp((int)(image.getSample(x, y, 3) * 65535.f), 0, 65535);
+                else
+                    pixel[3] = 65535;
+            }
+            else
+            {
+                pixel[1] = pixel[0];
+                pixel[2] = pixel[0];
+                pixel[3] = 65535;
+            }
+        }
+        png_write_row(png, (png_const_bytep)&buf[0]);
+    }
+
+    png_write_end(png, nullptr);
+
+    fclose(file);
+
+    png_destroy_write_struct(&png, &info);
+
+    return true;
 }

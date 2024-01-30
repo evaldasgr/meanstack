@@ -18,7 +18,7 @@ Each line is an offset keyframe - the first digit is the index of the image file
 
 For fine alignment, the align utility may be used to correct the rough offsets around some tracked object:
 ```sh
-$ meanstack align -i input-image-dir -O input-offsets-file.txt -p 437,448 -s 64 -m 24 -O final-offsets-file.txt
+$ meanstack align -i input-image-dir -O input-offsets-file.txt -p 437,448 -s 64 -m 24 -o final-offsets-file.txt
 ```
 The -p argument specifies the center position of the tracked object, -s argument specifies the search radius where pixel comparison will be performed, and the -m argument specifies the maximum offset radius. It is important that the entire search radius around the object is present in all images.
 

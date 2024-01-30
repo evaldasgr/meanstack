@@ -135,7 +135,7 @@ bool StackTool::parseArgs(int argc, char* argv[])
 
 void StackTool::runSumThread(int t, int tCount, const ImageSequence& imgSeq, const Image& dark, const OffsetsFile& offsets, int minX, int minY, Image& sum)
 {
-    for (int i = t; i < imgSeq.getCount(); i++)
+    for (int i = t; i < imgSeq.getCount(); i += tCount)
     {
         Image img;
         if (!img.load(imgSeq.getFilename(i)))

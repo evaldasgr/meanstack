@@ -7,18 +7,16 @@
 
 Image::Image():
     m_width(0),
-    m_height(0),
-    m_channels(0)
+    m_height(0)
 {
 
 }
 
-void Image::create(int width, int height, int channels)
+void Image::create(int width, int height)
 {
     m_width = width;
     m_height = height;
-    m_channels = channels;
-    m_data.resize(width * height * channels, 0.f);
+    m_data.resize(width * height * 4, 0.f);
 }
 
 bool Image::load(const std::string& filename)
@@ -81,12 +79,12 @@ bool Image::save(const std::string& filename) const
 
 float Image::getSample(int x, int y, int channel) const
 {
-    return m_data[x * m_channels + y * m_width * m_channels + channel];
+    return m_data[(x + y * m_width) * 4 + channel];
 }
 
 void Image::setSample(int x, int y, int channel, float sample)
 {
-    m_data[x * m_channels + y * m_width * m_channels + channel] = sample;
+    m_data[(x + y * m_width) * 4 + channel] = sample;
 }
 
 bool Image::parseFormat(const std::string& filename, ImgFormat& format) const
@@ -124,9 +122,4 @@ int Image::getWidth() const
 int Image::getHeight() const
 {
     return m_height;
-}
-
-int Image::getChannels() const
-{
-    return m_channels;
 }

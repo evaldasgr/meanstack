@@ -21,7 +21,7 @@ bool ImageJpegIo::load(const std::string& filename, Image& image)
 
     jpeg_start_decompress(&info);
 
-    image.create(info.output_width, info.output_height, info.num_components);
+    image.create(info.output_width, info.output_height);
 
     std::vector<unsigned char> data(info.output_width * info.num_components);
     while (info.output_scanline < info.output_height)
@@ -33,17 +33,26 @@ bool ImageJpegIo::load(const std::string& filename, Image& image)
 
         for (int x = 0; x < info.output_width; x++)
         {
+            int y = info.output_scanline - 1;
             for (int c = 0; c < info.num_components; c++)
             {
                 float sample = (float)data[x * info.num_components + c] / 255.f;
-                image.setSample(x, info.output_scanline - 1, c, sample);
+                image.setSample(x, y, c, sample);
             }
+            // In case of a grayscale image, duplicate values for G and B channels
+            if (info.num_components < 3)
+            {
+                image.setSample(x, y, 1, image.getSample(x, y, 0));
+                image.setSample(x, y, 2, image.getSample(x, y, 0));
+            }
+            // JPEGs don't support transparency, so always set alpha to opaque
+            image.setSample(x, y, 3, 1.f);
         }
     }
 
     jpeg_finish_decompress(&info);
     jpeg_destroy_decompress(&info);
-    fclose(file);
+    std::fclose(file);
 
     return true;
 }

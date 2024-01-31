@@ -180,7 +180,7 @@ void StackTool::runSumThread(int t, int tCount, const ImageSequence& imgSeq, con
                 // If this pixel is transparent, do not stack it
                 // This allows for source images that have some areas excluded
                 // from the stack
-                if (img.getChannels() == 4 && img.getSample(x, y, 3) < 0.5f)
+                if (img.getSample(x, y, 3) < 0.5f)
                     continue;
 
                 int sx = x + offsetX;

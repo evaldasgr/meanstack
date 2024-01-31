@@ -21,6 +21,11 @@ bool ImageTiffIo::load(const std::string& filename, Image& image)
     uint16_t samples, format;
     TIFFGetField(in, TIFFTAG_SAMPLESPERPIXEL, &samples);
     TIFFGetField(in, TIFFTAG_SAMPLEFORMAT, &format);
+    if (samples != 1 && samples != 3 && samples != 4)
+    {
+        std::cerr << "Error: Unsupported TIFF channel count" << std::endl;
+        return false;
+    }
     if (format != SAMPLEFORMAT_IEEEFP)
     {
         std::cerr << "Error: The TIFF must be floating point" << std::endl;
@@ -31,7 +36,7 @@ bool ImageTiffIo::load(const std::string& filename, Image& image)
     TIFFGetField(in, TIFFTAG_IMAGEWIDTH, &width);
     TIFFGetField(in, TIFFTAG_IMAGELENGTH, &height);
 
-    image.create(width, height, samples);
+    image.create(width, height);
 
     std::vector<float> data(width * samples);
     for (int y = 0; y < height; y++)
@@ -47,6 +52,15 @@ bool ImageTiffIo::load(const std::string& filename, Image& image)
         {
             for (int c = 0; c < samples; c++)
                 image.setSample(x, y, c, data[x * samples + c]);
+            // In case of a grayscale image, duplicate values for G and B channels
+            if (samples < 3)
+            {
+                image.setSample(x, y, 1, data[x * samples + 0]);
+                image.setSample(x, y, 2, data[x * samples + 0]);
+            }
+            // In case of an RGB image, make alpha opaque
+            if (samples == 3)
+                image.setSample(x, y, 3, 1.f);
         }
     }
 
@@ -68,7 +82,7 @@ bool ImageTiffIo::save(const std::string& filename, const Image& image)
         !TIFFSetField(out, TIFFTAG_IMAGELENGTH, image.getHeight()) ||
         !TIFFSetField(out, TIFFTAG_BITSPERSAMPLE, 32) ||
         !TIFFSetField(out, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB) ||
-        !TIFFSetField(out, TIFFTAG_SAMPLESPERPIXEL, image.getChannels()) ||
+        !TIFFSetField(out, TIFFTAG_SAMPLESPERPIXEL, 4) ||
         !TIFFSetField(out, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG) ||
         !TIFFSetField(out, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_IEEEFP))
     {
@@ -77,24 +91,21 @@ bool ImageTiffIo::save(const std::string& filename, const Image& image)
         return false;
     }
 
-    if (image.getChannels() == 4)
+    constexpr short extraSamples[] = { EXTRASAMPLE_UNASSALPHA };
+    if (!TIFFSetField(out, TIFFTAG_EXTRASAMPLES, 1, extraSamples))
     {
-        constexpr short extraSamples[] = { EXTRASAMPLE_UNASSALPHA };
-        if (!TIFFSetField(out, TIFFTAG_EXTRASAMPLES, 1, extraSamples))
-        {
-            std::cerr << "Error: Failed to set the TIFF extra samples field" << std::endl;
-            TIFFClose(out);
-            return false;
-        }
+        std::cerr << "Error: Failed to set the TIFF extra samples field" << std::endl;
+        TIFFClose(out);
+        return false;
     }
 
-    std::vector<float> data(image.getWidth() * image.getChannels());
+    std::vector<float> data(image.getWidth() * 4);
     for (int y = 0; y < image.getHeight(); y++)
     {
         for (int x = 0; x < image.getWidth(); x++)
         {
-            for (int c = 0; c < image.getChannels(); c++)
-                data[x * image.getChannels() + c] = image.getSample(x, y, c);
+            for (int c = 0; c < 4; c++)
+                data[x * 4 + c] = image.getSample(x, y, c);
         }
 
         if (TIFFWriteScanline(out, &data[0], y, 0) != 1)

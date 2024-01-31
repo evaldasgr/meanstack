@@ -8,7 +8,7 @@ class Image
 public:
     Image();
 
-    void create(int width, int height, int channels = 4);
+    void create(int width, int height);
     bool load(const std::string& filename);
 
     bool save(const std::string& filename) const;
@@ -18,7 +18,6 @@ public:
 
     int getWidth() const;
     int getHeight() const;
-    int getChannels() const;
 
 private:
     enum class ImgFormat
@@ -31,5 +30,4 @@ private:
     std::vector<float> m_data;
     int m_width;
     int m_height;
-    int m_channels;
 };

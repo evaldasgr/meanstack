@@ -31,10 +31,7 @@ bool DebayerTool::run(int argc, char* argv[])
             continue;
 
         Image outImg;
-        if (img.getChannels() == 4)
-            outImg.create(img.getWidth(), img.getHeight());
-        else
-            outImg.create(img.getWidth(), img.getHeight(), 3);
+        outImg.create(img.getWidth(), img.getHeight());
 
         // This algorithm debayers GRBG pattern Bayer images with linear
         // interpolation
@@ -43,35 +40,25 @@ bool DebayerTool::run(int argc, char* argv[])
         {
             for (int x = 0; x < img.getWidth(); x++)
             {
-                // Bayered images are usually single-channel (grayscale), but
-                // also support images where bayered data is stored in 3
-                // channels (RGB)
-                int rCh = 0, gCh = 0, bCh = 0;
-                if (img.getChannels() >= 3)
-                {
-                    gCh = 1;
-                    bCh = 2;
-                }
-
                 // Read existing values
                 // Based on their position, valid values will be kept, and
                 // invalid ones will be interpolated
-                float r = img.getSample(x, y, rCh);
-                float g = img.getSample(x, y, gCh);
-                float b = img.getSample(x, y, bCh);
+                float r = img.getSample(x, y, 0);
+                float g = img.getSample(x, y, 1);
+                float b = img.getSample(x, y, 2);
 
                 // Interpolate R if necessary
                 if (x % 2 == 0 && y % 2 == 1)
                 {
                     std::vector<float> v;
                     if (x > 0 && y > 0)
-                        v.push_back(img.getSample(x - 1, y - 1, rCh));
+                        v.push_back(img.getSample(x - 1, y - 1, 0));
                     if (x + 1 < img.getWidth() && y > 0)
-                        v.push_back(img.getSample(x + 1, y - 1, rCh));
+                        v.push_back(img.getSample(x + 1, y - 1, 0));
                     if (x > 0 && y + 1 < img.getHeight())
-                        v.push_back(img.getSample(x - 1, y + 1, rCh));
+                        v.push_back(img.getSample(x - 1, y + 1, 0));
                     if (x + 1 < img.getWidth() && y + 1 < img.getHeight())
-                        v.push_back(img.getSample(x + 1, y + 1, rCh));
+                        v.push_back(img.getSample(x + 1, y + 1, 0));
                     if (v.size() > 0)
                         r = std::accumulate(v.begin(), v.end(), 0.f) / v.size();
                 }
@@ -79,9 +66,9 @@ bool DebayerTool::run(int argc, char* argv[])
                 {
                     std::vector<float> v;
                     if (x > 0)
-                        v.push_back(img.getSample(x - 1, y, rCh));
+                        v.push_back(img.getSample(x - 1, y, 0));
                     if (x + 1 < img.getWidth())
-                        v.push_back(img.getSample(x + 1, y, rCh));
+                        v.push_back(img.getSample(x + 1, y, 0));
                     if (v.size() > 0)
                         r = std::accumulate(v.begin(), v.end(), 0.f) / v.size();
                 }
@@ -89,9 +76,9 @@ bool DebayerTool::run(int argc, char* argv[])
                 {
                     std::vector<float> v;
                     if (y > 0)
-                        v.push_back(img.getSample(x, y - 1, rCh));
+                        v.push_back(img.getSample(x, y - 1, 0));
                     if (y + 1 < img.getHeight())
-                        v.push_back(img.getSample(x, y + 1, rCh));
+                        v.push_back(img.getSample(x, y + 1, 0));
                     if (v.size() > 0)
                         r = std::accumulate(v.begin(), v.end(), 0.f) / v.size();
                 }
@@ -101,13 +88,13 @@ bool DebayerTool::run(int argc, char* argv[])
                 {
                     std::vector<float> v;
                     if (x > 0)
-                        v.push_back(img.getSample(x - 1, y, gCh));
+                        v.push_back(img.getSample(x - 1, y, 1));
                     if (x + 1 < img.getWidth())
-                        v.push_back(img.getSample(x + 1, y, gCh));
+                        v.push_back(img.getSample(x + 1, y, 1));
                     if (y > 0)
-                        v.push_back(img.getSample(x, y - 1, gCh));
+                        v.push_back(img.getSample(x, y - 1, 1));
                     if (y + 1 < img.getHeight())
-                        v.push_back(img.getSample(x, y + 1, gCh));
+                        v.push_back(img.getSample(x, y + 1, 1));
                     if (v.size() > 0)
                         g = std::accumulate(v.begin(), v.end(), 0.f) / v.size();
                 }
@@ -117,13 +104,13 @@ bool DebayerTool::run(int argc, char* argv[])
                 {
                     std::vector<float> v;
                     if (x > 0 && y > 0)
-                        v.push_back(img.getSample(x - 1, y - 1, bCh));
+                        v.push_back(img.getSample(x - 1, y - 1, 2));
                     if (x + 1 < img.getWidth() && y > 0)
-                        v.push_back(img.getSample(x + 1, y - 1, bCh));
+                        v.push_back(img.getSample(x + 1, y - 1, 2));
                     if (x > 0 && y + 1 < img.getHeight())
-                        v.push_back(img.getSample(x - 1, y + 1, bCh));
+                        v.push_back(img.getSample(x - 1, y + 1, 2));
                     if (x + 1 < img.getWidth() && y + 1 < img.getHeight())
-                        v.push_back(img.getSample(x + 1, y + 1, bCh));
+                        v.push_back(img.getSample(x + 1, y + 1, 2));
                     if (v.size() > 0)
                         b = std::accumulate(v.begin(), v.end(), 0.f) / v.size();
                 }
@@ -131,9 +118,9 @@ bool DebayerTool::run(int argc, char* argv[])
                 {
                     std::vector<float> v;
                     if (x > 0)
-                        v.push_back(img.getSample(x - 1, y, bCh));
+                        v.push_back(img.getSample(x - 1, y, 2));
                     if (x + 1 < img.getWidth())
-                        v.push_back(img.getSample(x + 1, y, bCh));
+                        v.push_back(img.getSample(x + 1, y, 2));
                     if (v.size() > 0)
                         b = std::accumulate(v.begin(), v.end(), 0.f) / v.size();
                 }
@@ -141,9 +128,9 @@ bool DebayerTool::run(int argc, char* argv[])
                 {
                     std::vector<float> v;
                     if (y > 0)
-                        v.push_back(img.getSample(x, y - 1, bCh));
+                        v.push_back(img.getSample(x, y - 1, 2));
                     if (y + 1 < img.getHeight())
-                        v.push_back(img.getSample(x, y + 1, bCh));
+                        v.push_back(img.getSample(x, y + 1, 2));
                     if (v.size() > 0)
                         b = std::accumulate(v.begin(), v.end(), 0.f) / v.size();
                 }
@@ -152,8 +139,7 @@ bool DebayerTool::run(int argc, char* argv[])
                 outImg.setSample(x, y, 0, r);
                 outImg.setSample(x, y, 1, g);
                 outImg.setSample(x, y, 2, b);
-                if (img.getChannels() == 4)
-                    outImg.setSample(x, y, 3, img.getSample(x, y, 3));
+                outImg.setSample(x, y, 3, img.getSample(x, y, 3));
             }
         }
 

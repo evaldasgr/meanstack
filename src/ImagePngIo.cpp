@@ -54,7 +54,7 @@ bool ImagePngIo::load(const std::string& filename, Image& image)
         }
     }
 
-    fclose(file);
+    std::fclose(file);
 
     png_destroy_read_struct(&png, &info, NULL);
 
@@ -73,7 +73,6 @@ bool ImagePngIo::save(const std::string& filename, const Image& image)
     png_init_io(png, file);
 
     // PNG does not support 32-bit bit-depth, so reduce to 16-bit
-    // For now all images will be converted to RGBA
     png_set_IHDR(png, info, image.getWidth(), image.getHeight(), 16, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
     png_write_info(png, info);
 
@@ -88,28 +87,16 @@ bool ImagePngIo::save(const std::string& filename, const Image& image)
             uint16_t* pixel = &buf[x * 4];
 
             pixel[0] = std::clamp((int)(image.getSample(x, y, 0) * 65535.f), 0, 65535);
-            if (image.getChannels() >= 3)
-            {
-                pixel[1] = std::clamp((int)(image.getSample(x, y, 1) * 65535.f), 0, 65535);
-                pixel[2] = std::clamp((int)(image.getSample(x, y, 2) * 65535.f), 0, 65535);
-                if (image.getChannels() == 4)
-                    pixel[3] = std::clamp((int)(image.getSample(x, y, 3) * 65535.f), 0, 65535);
-                else
-                    pixel[3] = 65535;
-            }
-            else
-            {
-                pixel[1] = pixel[0];
-                pixel[2] = pixel[0];
-                pixel[3] = 65535;
-            }
+            pixel[1] = std::clamp((int)(image.getSample(x, y, 1) * 65535.f), 0, 65535);
+            pixel[2] = std::clamp((int)(image.getSample(x, y, 2) * 65535.f), 0, 65535);
+            pixel[3] = std::clamp((int)(image.getSample(x, y, 3) * 65535.f), 0, 65535);
         }
         png_write_row(png, (png_const_bytep)&buf[0]);
     }
 
     png_write_end(png, nullptr);
 
-    fclose(file);
+    std::fclose(file);
 
     png_destroy_write_struct(&png, &info);
 

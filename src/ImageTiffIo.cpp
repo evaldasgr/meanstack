@@ -9,26 +9,18 @@ bool ImageTiffIo::load(const std::string& filename, Image& image)
     if (!in)
         return false;
 
-    // TODO: Add support for 8-bit and 16-bit images
-    uint16_t bitDepth;
+    uint16_t bitDepth, samples, format;
     TIFFGetField(in, TIFFTAG_BITSPERSAMPLE, &bitDepth);
-    if (bitDepth != 32)
-    {
-        std::cerr << "Error: The TIFF must be 32-bit" << std::endl;
-        return false;
-    }
-
-    uint16_t samples, format;
     TIFFGetField(in, TIFFTAG_SAMPLESPERPIXEL, &samples);
     TIFFGetField(in, TIFFTAG_SAMPLEFORMAT, &format);
     if (samples != 1 && samples != 3 && samples != 4)
     {
-        std::cerr << "Error: Unsupported TIFF channel count" << std::endl;
+        std::cerr << "Error: The TIFF must be 1, 3 or 4 samples per pixel" << std::endl;
         return false;
     }
-    if (format != SAMPLEFORMAT_IEEEFP)
+    if (!((format == SAMPLEFORMAT_UINT && (bitDepth == 8 || bitDepth == 16 || bitDepth == 32)) || (format == SAMPLEFORMAT_IEEEFP && (bitDepth == 32))))
     {
-        std::cerr << "Error: The TIFF must be floating point" << std::endl;
+        std::cerr << "Error: The TIFF must be 8, 16, 32-bit unsigned integer or 32-bit floating point" << std::endl;
         return false;
     }
 
@@ -38,7 +30,7 @@ bool ImageTiffIo::load(const std::string& filename, Image& image)
 
     image.create(width, height);
 
-    std::vector<float> data(width * samples);
+    std::vector<unsigned char> data(width * samples * bitDepth / 8);
     for (int y = 0; y < height; y++)
     {
         if (TIFFReadScanline(in, &data[0], y) == -1)
@@ -51,12 +43,25 @@ bool ImageTiffIo::load(const std::string& filename, Image& image)
         for (int x = 0; x < width; x++)
         {
             for (int c = 0; c < samples; c++)
-                image.setSample(x, y, c, data[x * samples + c]);
+            {
+                // Don't need to handle endianness as libtiff automatically corrects for it
+                if (format == SAMPLEFORMAT_UINT)
+                {
+                    if (bitDepth == 8)
+                        image.setSample(x, y, c, data[x * samples + c] / 255.f);
+                    else if (bitDepth == 16)
+                        image.setSample(x, y, c, ((uint16_t*)(&data[0]))[x * samples + c] / 65535.f);
+                    else if (bitDepth == 32)
+                        image.setSample(x, y, c, ((uint32_t*)(&data[0]))[x * samples + c] / 4294967295.f);
+                }
+                else if (format == SAMPLEFORMAT_IEEEFP && bitDepth == 32)
+                    image.setSample(x, y, c, ((float*)(&data[0]))[x * samples + c]);
+            }
             // In case of a grayscale image, duplicate values for G and B channels
             if (samples < 3)
             {
-                image.setSample(x, y, 1, data[x * samples + 0]);
-                image.setSample(x, y, 2, data[x * samples + 0]);
+                image.setSample(x, y, 1, image.getSample(x, y, 0));
+                image.setSample(x, y, 2, image.getSample(x, y, 0));
             }
             // In case of an RGB image, make alpha opaque
             if (samples == 3)

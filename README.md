@@ -7,7 +7,7 @@ meanstack is a utility for aligning and stacking astrophotography images to redu
 - libtiff
 
 # Usage
-Firstly, the input image files must be prepared in the correct format. The utility accepts 32-bit floating point TIFFs, 8/16-bit PNGs and 8-bit JPEGs. The files must be placed in a directory and be in correct alphabetical order (such as 000.jpg, 001.jpg, and so on).
+Firstly, the input image files must be prepared in the correct format. The utility accepts 8/16/32-bit TIFFs, 8/16-bit PNGs and JPEGs. The files must be placed in a directory and be in correct alphabetical order (such as 000.jpg, 001.jpg, and so on).
 
 Next, if image alignment is required, a rough alignment offsets file must be provided. This file may look like this:
 ```

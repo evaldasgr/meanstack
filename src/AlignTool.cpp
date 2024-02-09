@@ -66,10 +66,11 @@ bool AlignTool::run(int argc, char* argv[])
             m_objectPos.y + startOffset.y - offset.y
         };
 
-        // Is the search radius within bounds of the image?
-        if (localObjectPos.x - m_searchRadius < 0 || localObjectPos.y - m_searchRadius < 0 || localObjectPos.x + m_searchRadius >= img.getWidth() || localObjectPos.y + m_searchRadius >= img.getHeight())
+        // Are the search and offset radii within bounds of the image?
+        // If so, leave the image unaligned
+        if (localObjectPos.x - m_searchRadius - m_offsetRadius < 0 || localObjectPos.y - m_searchRadius - m_offsetRadius < 0 || localObjectPos.x + m_searchRadius + m_offsetRadius >= img.getWidth() || localObjectPos.y + m_searchRadius + m_offsetRadius >= img.getHeight())
         {
-            std::cerr << "Error: Out of bounds search area in image " << i << std::endl;
+            std::cerr << "Error: Out of bounds search and/or offset area in image " << i << std::endl;
             continue;
         }
 

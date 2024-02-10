@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <iostream>
 #include <algorithm>
+#include <FilenameComparator.hpp>
 
 bool ImageSequence::open(const std::string& dir)
 {
@@ -13,8 +14,7 @@ bool ImageSequence::open(const std::string& dir)
             m_fnames.push_back(dirEntry.path().string());
     }
 
-    // TODO: Numerical sort to avoid sequences like 0.jpg, 1.jpg, 10.jpg etc.
-    std::sort(m_fnames.begin(), m_fnames.end());
+    std::sort(m_fnames.begin(), m_fnames.end(), FilenameComparator::compare);
 
     return true;
 }

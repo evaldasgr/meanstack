@@ -57,6 +57,7 @@
 		<Unit filename="include/StackTool.hpp" />
 		<Unit filename="include/Vector.hpp" />
 		<Unit filename="include/DebayerTool.hpp" />
+		<Unit filename="include/FilenameComparator.hpp" />
 		<Unit filename="src/AlignTool.cpp" />
 		<Unit filename="src/ArgParser.cpp" />
 		<Unit filename="src/Image.cpp" />
@@ -69,6 +70,7 @@
 		<Unit filename="src/StackTool.cpp" />
 		<Unit filename="src/Vector.cpp" />
 		<Unit filename="src/DebayerTool.cpp" />
+		<Unit filename="src/FilenameComparator.cpp" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>

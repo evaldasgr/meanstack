@@ -16,4 +16,6 @@ private:
     };
 
     static void split(const std::string& str, std::vector<Part>& parts);
+
+    static int compareNum(const std::string& a, const std::string& b);
 };

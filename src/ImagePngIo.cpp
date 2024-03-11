@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm>
 #include <bit>
+#include <cstdint>
 #include <png.h>
 #include <Image.hpp>
 

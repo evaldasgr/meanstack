@@ -3,6 +3,7 @@ meanstack is a utility for aligning and stacking astrophotography images to redu
 
 # Dependencies
 - libjpeg-turbo
+- libjxl
 - libpng
 - libtiff
 

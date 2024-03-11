@@ -155,7 +155,7 @@ void DebayerTool::printUsage()
 {
     std::cerr << "Usage: meanstack debayer -i dir [-f format] -o dir" << std::endl
         << "-i dir    Input image sequence directory" << std::endl
-        << "-f format Output image format (TIFF/PNG), optional (default - TIFF)" << std::endl
+        << "-f format Output image format (JXL/TIFF/PNG), optional (default - JXL)" << std::endl
         << "-o dir    Output image sequence directory" << std::endl;
 }
 
@@ -176,14 +176,14 @@ bool DebayerTool::parseArgs(int argc, char* argv[])
     {
         m_outFormat = parser.getString("-f");
         std::transform(m_outFormat.begin(), m_outFormat.end(), m_outFormat.begin(), [](unsigned char c) { return std::tolower(c); });
-        if (m_outFormat.compare("tiff") != 0 && m_outFormat.compare("tif") != 0 && m_outFormat.compare("png") != 0)
+        if (m_outFormat.compare("jxl") != 0 && m_outFormat.compare("tiff") != 0 && m_outFormat.compare("tif") != 0 && m_outFormat.compare("png") != 0)
         {
             std::cerr << "Error: Unrecognized image format" << std::endl;
             return false;
         }
     }
     else
-        m_outFormat = "tiff";
+        m_outFormat = "jxl";
 
     return true;
 }

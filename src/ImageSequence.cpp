@@ -10,7 +10,7 @@ bool ImageSequence::open(const std::string& dir)
     {
         std::string ext = dirEntry.path().extension().string();
         std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return std::tolower(c); });
-        if (ext.compare(".jpg") == 0 || ext.compare(".jpeg") == 0 || ext.compare(".png") == 0 || ext.compare(".tif") == 0 || ext.compare(".tiff") == 0)
+        if (ext.compare(".jpg") == 0 || ext.compare(".jpeg") == 0 || ext.compare(".jxl") == 0 || ext.compare(".png") == 0 || ext.compare(".tif") == 0 || ext.compare(".tiff") == 0)
             m_fnames.push_back(dirEntry.path().string());
     }
 

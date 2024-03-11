@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm>
 #include <ImageJpegIo.hpp>
+#include <ImageJpegXlIo.hpp>
 #include <ImagePngIo.hpp>
 #include <ImageTiffIo.hpp>
 
@@ -31,6 +32,11 @@ bool Image::load(const std::string& filename)
         ImageJpegIo io;
         ret = io.load(filename, *this);
     }
+    else if (format == ImgFormat::JpegXl)
+    {
+        ImageJpegXlIo io;
+        ret = io.load(filename, *this);
+    }
     else if (format == ImgFormat::Png)
     {
         ImagePngIo io;
@@ -58,6 +64,11 @@ bool Image::save(const std::string& filename) const
     if (format == ImgFormat::Jpeg)
     {
         ImageJpegIo io;
+        ret = io.save(filename, *this);
+    }
+    else if (format == ImgFormat::JpegXl)
+    {
+        ImageJpegXlIo io;
         ret = io.save(filename, *this);
     }
     else if (format == ImgFormat::Png)
@@ -101,6 +112,8 @@ bool Image::parseFormat(const std::string& filename, ImgFormat& format) const
 
     if (ext.compare(".jpg") == 0 || ext.compare(".jpeg") == 0)
         format = ImgFormat::Jpeg;
+    else if (ext.compare(".jxl") == 0)
+        format = ImgFormat::JpegXl;
     else if (ext.compare(".png") == 0)
         format = ImgFormat::Png;
     else if (ext.compare(".tif") == 0 || ext.compare(".tiff") == 0)

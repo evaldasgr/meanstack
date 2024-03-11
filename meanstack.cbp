@@ -44,24 +44,30 @@
 			<Add library="tiff" />
 			<Add library="png" />
 			<Add library="jpeg" />
+			<Add library="jxl" />
+			<Add library="jxl_threads" />
 			<Add library="pthread" />
 		</Linker>
 		<Unit filename="include/AlignTool.hpp" />
 		<Unit filename="include/ArgParser.hpp" />
+		<Unit filename="include/DebayerTool.hpp" />
+		<Unit filename="include/FilenameComparator.hpp" />
 		<Unit filename="include/Image.hpp" />
 		<Unit filename="include/ImageJpegIo.hpp" />
+		<Unit filename="include/ImageJpegXlIo.hpp" />
 		<Unit filename="include/ImagePngIo.hpp" />
 		<Unit filename="include/ImageSequence.hpp" />
 		<Unit filename="include/ImageTiffIo.hpp" />
 		<Unit filename="include/OffsetsFile.hpp" />
 		<Unit filename="include/StackTool.hpp" />
 		<Unit filename="include/Vector.hpp" />
-		<Unit filename="include/DebayerTool.hpp" />
-		<Unit filename="include/FilenameComparator.hpp" />
 		<Unit filename="src/AlignTool.cpp" />
 		<Unit filename="src/ArgParser.cpp" />
+		<Unit filename="src/DebayerTool.cpp" />
+		<Unit filename="src/FilenameComparator.cpp" />
 		<Unit filename="src/Image.cpp" />
 		<Unit filename="src/ImageJpegIo.cpp" />
+		<Unit filename="src/ImageJpegXlIo.cpp" />
 		<Unit filename="src/ImagePngIo.cpp" />
 		<Unit filename="src/ImageSequence.cpp" />
 		<Unit filename="src/ImageTiffIo.cpp" />
@@ -69,8 +75,6 @@
 		<Unit filename="src/OffsetsFile.cpp" />
 		<Unit filename="src/StackTool.cpp" />
 		<Unit filename="src/Vector.cpp" />
-		<Unit filename="src/DebayerTool.cpp" />
-		<Unit filename="src/FilenameComparator.cpp" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>

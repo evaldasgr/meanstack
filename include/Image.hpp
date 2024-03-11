@@ -22,7 +22,7 @@ public:
 private:
     enum class ImgFormat
     {
-        Jpeg, Png, Tiff
+        Jpeg, JpegXl, Png, Tiff
     };
 
     bool parseFormat(const std::string& filename, ImgFormat& format) const;

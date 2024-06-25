@@ -11,6 +11,14 @@ void ArgParser::registerInt(const std::string& name, bool required)
     m_props[name] = props;
 }
 
+void ArgParser::registerFloat(const std::string& name, bool required)
+{
+    ArgProps props;
+    props.type = ArgType::Float;
+    props.required = required;
+    m_props[name] = props;
+}
+
 void ArgParser::registerString(const std::string& name, bool required)
 {
     ArgProps props;
@@ -63,6 +71,25 @@ bool ArgParser::parse(int argc, char* argv[], int startFrom)
                     return false;
                 }
             }
+            else if (p.second.type == ArgType::Float)
+            {
+                if (++i == argc)
+                {
+                    std::cerr << "Error: Missing value for argument " << p.first << std::endl;
+                    return false;
+                }
+
+                try
+                {
+                    float val = std::stof(argv[i]);
+                    m_floats[p.first] = val;
+                }
+                catch (std::exception&)
+                {
+                    std::cerr << "Error: Argument " << p.first << " is not a valid float" << std::endl;
+                    return false;
+                }
+            }
             else if (p.second.type == ArgType::String)
             {
                 if (++i == argc)
@@ -111,6 +138,13 @@ bool ArgParser::parse(int argc, char* argv[], int startFrom)
                 return false;
             }
             break;
+        case ArgType::Float:
+            if (m_floats.find(p.first) == m_floats.end())
+            {
+                std::cerr << "Error: Required argument " << p.first << " was not specified" << std::endl;
+                return false;
+            }
+            break;
         case ArgType::String:
             if (m_strings.find(p.first) == m_strings.end())
             {
@@ -136,6 +170,12 @@ bool ArgParser::hasInt(const std::string& name) const
     return m_ints.find(name) != m_ints.end();
 }
 
+
+bool ArgParser::hasFloat(const std::string& name) const
+{
+    return m_floats.find(name) != m_floats.end();
+}
+
 bool ArgParser::hasString(const std::string& name) const
 {
     return m_strings.find(name) != m_strings.end();
@@ -154,6 +194,11 @@ bool ArgParser::hasFlag(const std::string& name) const
 int ArgParser::getInt(const std::string& name) const
 {
     return m_ints.at(name);
+}
+
+float ArgParser::getFloat(const std::string& name) const
+{
+    return m_floats.at(name);
 }
 
 const std::string& ArgParser::getString(const std::string& name) const

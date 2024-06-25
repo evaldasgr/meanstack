@@ -1,11 +1,19 @@
 #include <StackTool.hpp>
 #include <iostream>
 #include <thread>
+#include <algorithm>
+#include <cmath>
 #include <ArgParser.hpp>
 #include <ImageSequence.hpp>
 #include <Image.hpp>
 #include <OffsetsFile.hpp>
 #include <Vector.hpp>
+
+StackTool::StackTool():
+    m_minQualityPerc(0.f)
+{
+
+}
 
 bool StackTool::run(int argc, char* argv[])
 {
@@ -51,6 +59,25 @@ bool StackTool::run(int argc, char* argv[])
 
     int threadCount = std::thread::hardware_concurrency();
 
+    // Calculate quality of each image
+    // TODO: Add progress indicator
+    std::vector<std::thread> threads;
+    std::vector<float> quality(imgSeq.getCount());
+    float minQuality = 0.f;
+    if (m_minQualityPerc > 0.f)
+    {
+        for (int i = 0; i < threadCount; i++)
+            threads.emplace_back(&StackTool::runQualityThread, this, i, threadCount, std::cref(imgSeq), std::ref(quality));
+        for (auto& t : threads)
+            t.join();
+        threads.clear();
+
+        // Find minimum quality based on desired percentile
+        std::vector<float> sortedQuality(quality);
+        std::sort(sortedQuality.begin(), sortedQuality.end());
+        minQuality = sortedQuality[std::clamp((int)((imgSeq.getCount() - 1) * m_minQualityPerc), 0, imgSeq.getCount() - 1)];
+    }
+
     // Create intermediate sum images for all threads
     std::vector<Image> threadSums(threadCount);
     for (Image& i : threadSums)
@@ -58,11 +85,11 @@ bool StackTool::run(int argc, char* argv[])
 
     // Run sum threads
     // TODO: Add progress indicator
-    std::vector<std::thread> threads;
     for (int i = 0; i < threadCount; i++)
-        threads.emplace_back(&StackTool::runSumThread, this, i, threadCount, std::cref(imgSeq), std::cref(darkImg), std::cref(offsets), minX, minY, std::ref(threadSums[i]));
+        threads.emplace_back(&StackTool::runSumThread, this, i, threadCount, std::cref(imgSeq), std::cref(darkImg), std::cref(offsets), minX, minY, std::ref(threadSums[i]), std::cref(quality), minQuality);
     for (auto& t : threads)
         t.join();
+    threads.clear();
 
     // Calculate the final sum
     Image outImg;
@@ -105,10 +132,11 @@ bool StackTool::run(int argc, char* argv[])
 
 void StackTool::printUsage()
 {
-    std::cerr << "Usage: meanstack stack -i dir [-d file] [-O file] -o file" << std::endl
+    std::cerr << "Usage: meanstack stack -i dir [-d file] [-O file] [-q perc] -o file" << std::endl
         << "-i dir  Input image sequence directory" << std::endl
         << "-d file Input dark frame image file, optional" << std::endl
         << "-O file Input offsets file, optional" << std::endl
+        << "-q perc Minimum image quality level from 0 to 1, optional" << std::endl
         << "-o file Output image file" << std::endl;
 }
 
@@ -118,6 +146,7 @@ bool StackTool::parseArgs(int argc, char* argv[])
     parser.registerString("-i", true);
     parser.registerString("-d");
     parser.registerString("-O");
+    parser.registerFloat("-q");
     parser.registerString("-o", true);
 
     if (!parser.parse(argc, argv, 2))
@@ -130,13 +159,61 @@ bool StackTool::parseArgs(int argc, char* argv[])
         m_inOffsetsFn = parser.getString("-O");
     m_outFn = parser.getString("-o");
 
+    if (parser.hasFloat("-q"))
+    {
+        m_minQualityPerc = parser.getFloat("-q");
+        if (m_minQualityPerc < 0.f || m_minQualityPerc > 1.f)
+        {
+            std::cerr << "Error: Minimum quality percentile must be between 0 and 1" << std::endl;
+            return false;
+        }
+    }
+
     return true;
 }
 
-void StackTool::runSumThread(int t, int tCount, const ImageSequence& imgSeq, const Image& dark, const OffsetsFile& offsets, int minX, int minY, Image& sum)
+void StackTool::runQualityThread(int t, int tCount, const ImageSequence& imgSeq, std::vector<float>& quality)
 {
     for (int i = t; i < imgSeq.getCount(); i += tCount)
     {
+        Image img;
+        if (!img.load(imgSeq.getFilename(i)))
+            continue;
+
+        // Calculate energy of image gradient
+        float energy = 0.f;
+        int energySamples = 0;
+        for (int y = 0; y < img.getHeight() - 1; y++)
+        {
+            for (int x = 0; x < img.getWidth() - 1; x++)
+            {
+                // Ignore transparent pixels
+                if (img.getSample(x, y, 3) < 0.5f || img.getSample(x + 1, y, 3) < 0.5f || img.getSample(x, y + 1, 3) < 0.5f)
+                    continue;
+
+                energySamples++;
+
+                float g = (img.getSample(x, y, 0) + img.getSample(x, y, 1) + img.getSample(x, y, 2)) / 3.f;
+                float gx = (img.getSample(x + 1, y, 0) + img.getSample(x + 1, y, 1) + img.getSample(x + 1, y, 2)) / 3.f;
+                float gy = (img.getSample(x, y + 1, 0) + img.getSample(x, y + 1, 1) + img.getSample(x, y + 1, 2)) / 3.f;
+
+                energy += std::pow(gx - g, 2.f) + std::pow(gy - g, 2.f);
+            }
+        }
+        energy /= (float)energySamples;
+
+        quality[i] = energy;
+    }
+}
+
+void StackTool::runSumThread(int t, int tCount, const ImageSequence& imgSeq, const Image& dark, const OffsetsFile& offsets, int minX, int minY, Image& sum, const std::vector<float>& quality, float qualityMin)
+{
+    for (int i = t; i < imgSeq.getCount(); i += tCount)
+    {
+        // Ignore images below specified quality
+        if (qualityMin >= 0.f && quality[i] < qualityMin)
+            continue;
+
         Image img;
         if (!img.load(imgSeq.getFilename(i)))
             continue;
